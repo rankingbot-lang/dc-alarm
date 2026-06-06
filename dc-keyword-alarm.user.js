@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         디시 키워드 알람
 // @namespace    https://gall.dcinside.com
-// @version      0.1.1
+// @version      0.1.2
 // @description  디시인사이드 새 글 제목 키워드를 감지해 페이지 안 알림을 띄웁니다.
 // @author       rankingbot
 // @license      MIT
@@ -33,6 +33,7 @@
     failCount: 0,
     timer: null,
     galleryKey: getGalleryKey(),
+    baselineReady: false,
   };
 
   const els = buildPanel();
@@ -40,7 +41,7 @@
   bindPanelEvents();
   logStatus("대기 중");
 
-  seedCurrentPageIfNeeded();
+  state.baselineReady = seedCurrentPageBaseline();
   scheduleNext(0);
 
   function buildPanel() {
@@ -451,18 +452,17 @@
         renderStatus();
       }
       const currentMaxNumber = maxPostNumber(posts);
-      const lastNumber = loadLastNumber();
-      const firstRun = lastNumber === 0;
 
-      if (firstRun) {
-        saveSeen(posts.map((post) => post.number));
-        saveLastNumber(currentMaxNumber);
+      if (!state.baselineReady) {
+        savePostBaseline(posts);
+        state.baselineReady = true;
         logStatus(`기준점 저장: ${posts.length}개`);
         renderStatus();
         state.failCount = 0;
         return;
       }
 
+      const lastNumber = loadLastNumber();
       const seen = loadSeen();
       const seenSet = new Set(seen);
       const newPosts = posts
@@ -611,17 +611,21 @@
     return url.href;
   }
 
-  function seedCurrentPageIfNeeded() {
-    if (loadLastNumber() > 0) return;
+  function seedCurrentPageBaseline() {
     const posts = [];
     for (const row of document.querySelectorAll("tr.ub-content[data-no]")) {
       const number = String(row.getAttribute("data-no") || "").trim();
       if (number) posts.push(number);
     }
-    if (posts.length > 0) {
-      saveSeen(posts);
-      saveLastNumber(Math.max(...posts.map((number) => Number(number) || 0)));
-    }
+    if (posts.length === 0) return false;
+    saveSeen(posts);
+    saveLastNumber(Math.max(...posts.map((number) => Number(number) || 0)));
+    return true;
+  }
+
+  function savePostBaseline(posts) {
+    saveSeen(posts.map((post) => post.number));
+    saveLastNumber(maxPostNumber(posts));
   }
 
   function matchKeywords(title) {
@@ -683,7 +687,19 @@
     for (const node of clone.querySelectorAll(".blind, .icon_img, .sp_img, .reply_numbox, .reply_num")) {
       node.remove();
     }
-    return cleanText(clone.textContent).replace(/(?:^|\s)[|｜](?=\s|$)/g, " ").replace(/\s+/g, " ").trim();
+    return cleanTitleText(clone.textContent);
+  }
+
+  function cleanTitleText(value) {
+    return String(value || "")
+      .split(/\r?\n/)
+      .map((part) => cleanText(part))
+      .filter((part) => part && !/^[|｜]+$/.test(part))
+      .join(" ")
+      .replace(/^[|｜]\s*/, "")
+      .replace(/\s*[|｜]$/, "")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
   function logStatus(message) {
