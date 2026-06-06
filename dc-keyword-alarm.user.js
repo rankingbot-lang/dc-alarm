@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         디시 키워드 알람
 // @namespace    https://gall.dcinside.com
-// @version      0.1.0
+// @version      0.1.1
 // @description  디시인사이드 새 글 제목 키워드를 감지해 페이지 안 알림을 띄웁니다.
 // @author       rankingbot
 // @license      MIT
@@ -525,13 +525,13 @@
     for (const row of doc.querySelectorAll("tr.ub-content[data-no]")) {
       const number = String(row.getAttribute("data-no") || "").trim();
       const type = String(row.getAttribute("data-type") || "").trim();
-      const link = row.querySelector("td.gall_tit a[href]");
+      const link = row.querySelector("td.gall_tit a[href]:not(.reply_numbox)");
 
       if (!number || !/^\d+$/.test(number) || type === "icon_notice" || !link) continue;
 
       posts.push({
         number,
-        title: cleanText(link.textContent),
+        title: extractPostTitle(link),
         url: new URL(link.getAttribute("href"), location.origin).href,
         author: cleanText(row.querySelector("td.gall_writer")?.getAttribute("data-nick") || row.querySelector("td.gall_writer")?.textContent || ""),
         createdAt: cleanText(row.querySelector("td.gall_date")?.getAttribute("title") || row.querySelector("td.gall_date")?.textContent || ""),
@@ -676,6 +676,14 @@
 
   function cleanText(value) {
     return String(value || "").replace(/\s+/g, " ").trim();
+  }
+
+  function extractPostTitle(link) {
+    const clone = link.cloneNode(true);
+    for (const node of clone.querySelectorAll(".blind, .icon_img, .sp_img, .reply_numbox, .reply_num")) {
+      node.remove();
+    }
+    return cleanText(clone.textContent).replace(/(?:^|\s)[|｜](?=\s|$)/g, " ").replace(/\s+/g, " ").trim();
   }
 
   function logStatus(message) {
