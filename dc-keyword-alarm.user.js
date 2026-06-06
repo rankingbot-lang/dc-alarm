@@ -5,6 +5,7 @@
 // @description  디시인사이드 새 글 제목 키워드를 감지해 페이지 안 알림을 띄웁니다.
 // @author       rankingbot
 // @license      MIT
+// @homepageURL  https://sleazyfork.org/ko/scripts/581303
 // @match        https://gall.dcinside.com/*/board/*
 // @match        https://gall.dcinside.com/board/*
 // @grant        GM_getValue
@@ -98,7 +99,7 @@
         position: relative;
         display: inline-block;
         margin-right: 8px;
-        vertical-align: top;
+        vertical-align: middle;
         color: #333;
         font: 12px/1.4 Arial, sans-serif;
       }
@@ -114,7 +115,7 @@
       }
       #dc-keyword-alarm .dgn-head {
         width: auto;
-        height: 22px;
+        height: 18px;
         gap: 4px;
         justify-content: flex-end;
       }
@@ -206,7 +207,7 @@
       }
       #dc-keyword-alarm.dgn-collapsed .dgn-head {
         width: auto;
-        height: 22px;
+        height: 18px;
         margin: 0;
         justify-content: flex-end;
       }
@@ -271,6 +272,7 @@
         background: transparent;
         color: #111;
         font-weight: 400;
+        line-height: 18px;
       }
       #dc-keyword-alarm:not(.dgn-collapsed) .dgn-head [data-role="collapse"] {
         width: auto;
