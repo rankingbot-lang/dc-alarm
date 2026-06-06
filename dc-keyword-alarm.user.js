@@ -4,6 +4,7 @@
 // @version      0.1.0
 // @description  디시인사이드 새 글 제목 키워드를 감지해 페이지 안 알림을 띄웁니다.
 // @author       rankingbot
+// @license      MIT
 // @match        https://gall.dcinside.com/*/board/*
 // @match        https://gall.dcinside.com/board/*
 // @grant        GM_getValue
