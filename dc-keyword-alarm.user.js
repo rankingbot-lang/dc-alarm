@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         디시 키워드 알람
 // @namespace    https://gall.dcinside.com
-// @version      0.1.2
+// @version      0.1.3
 // @description  디시인사이드 새 글 제목 키워드를 감지해 페이지 안 알림을 띄웁니다.
 // @author       rankingbot
 // @license      MIT
@@ -612,15 +612,24 @@
   }
 
   function seedCurrentPageBaseline() {
+    if (!isCurrentFirstListPage()) return false;
+
     const posts = [];
     for (const row of document.querySelectorAll("tr.ub-content[data-no]")) {
       const number = String(row.getAttribute("data-no") || "").trim();
-      if (number) posts.push(number);
+      const type = String(row.getAttribute("data-type") || "").trim();
+      if (/^\d+$/.test(number) && type !== "icon_notice") posts.push(number);
     }
     if (posts.length === 0) return false;
     saveSeen(posts);
     saveLastNumber(Math.max(...posts.map((number) => Number(number) || 0)));
     return true;
+  }
+
+  function isCurrentFirstListPage() {
+    if (!/\/board\/lists\/?$/.test(location.pathname)) return false;
+    const page = new URL(location.href).searchParams.get("page");
+    return !page || page === "1";
   }
 
   function savePostBaseline(posts) {
@@ -696,6 +705,7 @@
       .map((part) => cleanText(part))
       .filter((part) => part && !/^[|｜]+$/.test(part))
       .join(" ")
+      .replace(/\s*[|｜]\s*/g, " ")
       .replace(/^[|｜]\s*/, "")
       .replace(/\s*[|｜]$/, "")
       .replace(/\s+/g, " ")
