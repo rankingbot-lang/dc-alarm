@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         디시 키워드 알람
 // @namespace    https://gall.dcinside.com
-// @version      0.1.3
+// @version      0.1.4
 // @description  디시인사이드 새 글 제목 키워드를 감지해 페이지 안 알림을 띄웁니다.
 // @author       rankingbot
 // @license      MIT
@@ -559,13 +559,14 @@
     toast.type = "button";
     toast.className = "dgn-page-toast";
     toast.innerHTML = `<span></span>`;
-    toast.querySelector("span").textContent = text;
+    setToastText(toast, text);
     toast.addEventListener("click", () => {
       toast.remove();
       if (urlToOpen) window.location.assign(urlToOpen);
     });
 
     els.toastStack.prepend(toast);
+    cleanVisibleToastTexts();
     while (els.toastStack.children.length > toastLimit()) {
       els.toastStack.lastElementChild.remove();
     }
@@ -582,6 +583,20 @@
     window.setTimeout(() => {
       if (!hovered) toast.remove();
     }, 10000);
+  }
+
+  function setToastText(toast, text) {
+    const cleanedText = cleanTitleText(text);
+    const label = cleanedText || cleanText(text);
+    const textEl = toast.querySelector("span");
+    textEl.textContent = label;
+    toast.title = label;
+  }
+
+  function cleanVisibleToastTexts() {
+    for (const toast of els.toastStack.querySelectorAll(".dgn-page-toast")) {
+      setToastText(toast, toast.querySelector("span")?.textContent || toast.textContent);
+    }
   }
 
   function openUrl(postUrl) {
@@ -705,7 +720,7 @@
       .map((part) => cleanText(part))
       .filter((part) => part && !/^[|｜]+$/.test(part))
       .join(" ")
-      .replace(/\s*[|｜]\s*/g, " ")
+      .replace(/[|｜]/g, "")
       .replace(/^[|｜]\s*/, "")
       .replace(/\s*[|｜]$/, "")
       .replace(/\s+/g, " ")
