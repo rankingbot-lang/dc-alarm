@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         디시 키워드 알람
 // @namespace    https://gall.dcinside.com
-// @version      0.1.4
+// @version      0.1.5
 // @description  디시인사이드 새 글 제목 키워드를 감지해 페이지 안 알림을 띄웁니다.
 // @author       rankingbot
 // @license      MIT
@@ -195,6 +195,13 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+      #dc-keyword-alarm .dgn-page-toast::before,
+      #dc-keyword-alarm .dgn-page-toast::after,
+      #dc-keyword-alarm .dgn-page-toast span::before,
+      #dc-keyword-alarm .dgn-page-toast span::after {
+        display: none !important;
+        content: none !important;
       }
       #dc-keyword-alarm.dgn-collapsed {
         width: auto;
